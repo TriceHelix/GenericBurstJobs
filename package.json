@@ -1,17 +1,16 @@
 {
     "name": "com.tricehelix.genericburstjobs",
-    "version": "1.0.0-preview",
+    "version": "1.0.0-preview.2",
     "displayName": "Generic Burst Jobs",
     "description": "Support for generic, Burst compiled Job structs through automatic code analysis and generation",
     "unity": "2022.3",
-    "documentationUrl": "",
+    "documentationUrl": "https://github.com/TriceHelix/GenericBurstJobs",
     "changelogUrl": "",
     "license": "LICENSE.txt",
     "licensesUrl": "",
     "dependencies": {
       "com.unity.burst": "1.8.0",
-      "com.unity.collections": "2.1.1",
-      "com.annulusgames.unity-codegen": "https://github.com/TriceHelix/UnityCodeGen.git?path=/Assets/UnityCodeGen"
+      "com.unity.collections": "2.1.1"
    },
    "keywords": [
       "jobs system",
