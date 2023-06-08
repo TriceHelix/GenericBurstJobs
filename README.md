@@ -7,7 +7,7 @@ Requires Unity 2020.3 LTS or newer.
 
 #### Installation (via Package Manager)
 * Click "Add package from git URL..."
-* Enter `https://github.com/AnnulusGames/UnityCodeGen.git#v1.0.0` and click "Add"
+* Enter `https://github.com/AnnulusGames/UnityCodeGen.git?path=/Assets/UnityCodeGen` and click "Add"
 * Repeat with `https://github.com/TriceHelix/GenericBurstJobs.git#upm`
 * Done!
 
