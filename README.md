@@ -1,19 +1,19 @@
 # Generic Burst Jobs for Unity
 
 ### Support for generic, Burst compiled Job structs through automatic code analysis and generation
-Requires Unity 2020.3 or newer.
+Requires Unity 2020.3 LTS or newer.
 
 ---
 
 #### Installation (via Package Manager)
 * Click "Add package from git URL..."
-* Enter `https://github.com/TriceHelix/GenericBurstJobs.git#upm` and click "Add"
+* Enter `https://github.com/AnnulusGames/UnityCodeGen.git#v1.0.0` and click "Add"
+* Repeat with `https://github.com/TriceHelix/GenericBurstJobs.git#upm`
 * Done!
 
-*NOTE: This will install the following dependencies:*
-* Unity.Burst
-* Unity.Collections
-* A fork of https://github.com/AnnulusGames/UnityCodeGen
+Additional Unity package dependencies:
+* Unity.Burst (1.8.0 and newer)
+* Unity.Collections (1.4.0 and newer)
 
 Mono.Cecil is also required but already built into the Unity Editor.
 
