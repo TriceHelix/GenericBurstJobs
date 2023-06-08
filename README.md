@@ -1,7 +1,7 @@
 # Generic Burst Jobs for Unity
 
 ### Support for generic, Burst compiled Job structs through automatic code analysis and generation
-Requires Unity 2022.3 or newer.
+Requires Unity 2020.3 or newer.
 
 ---
 
@@ -14,6 +14,7 @@ Requires Unity 2022.3 or newer.
 * Unity.Burst
 * Unity.Collections
 * A fork of https://github.com/AnnulusGames/UnityCodeGen
+
 Mono.Cecil is also required but already built into the Unity Editor.
 
 ---
@@ -26,7 +27,7 @@ When using seperate assemblies (not the default "Assembly-CSharp"), you must mar
 
 You can exclude specific job structs or entire assemblies by utilizing this attribute: `[TriceHelix.GenericBurstJobs.DisableGenericJobRegistry]`
 
-Code generation is managed by (this dependency)[https://github.com/AnnulusGames/UnityCodeGen]. The easiest way to ensure the code will be refreshed when changes are made is to enable source re-generation before every recompile. This option is located at `Tools > UnityCodeGen > Auto-generate on recompile`. Alternatively, you can manually refresh it via `Tools > UnityCodeGen > Generate`.
+Code generation is managed by [this dependency](https://github.com/AnnulusGames/UnityCodeGen). The easiest way to ensure the code will be refreshed when changes are made is to enable source re-generation before every recompile. This option is located at `Tools > UnityCodeGen > Auto-generate on recompile`. Alternatively, you can manually refresh it via `Tools > UnityCodeGen > Generate`.
 
 ---
 
