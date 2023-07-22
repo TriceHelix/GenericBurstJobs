@@ -10,7 +10,7 @@
     "dependencies": {
       "com.unity.burst": "1.8.0",
       "com.unity.collections": "2.1.1",
-      "com.unity.nuget.mono-cecil" : "1.10"
+      "com.unity.nuget.mono-cecil" : "1.10.0"
    },
    "keywords": [
       "jobs system",
