@@ -1,0 +1,25 @@
+{
+    "name": "com.tricehelix.genericburstjobs",
+    "version": "1.0.0",
+    "displayName": "Generic Burst Jobs",
+    "description": "Support for generic, Burst compiled Job structs through automatic code analysis and generation",
+    "unity": "2022.3",
+    "documentationUrl": "https://github.com/TriceHelix/GenericBurstJobs",
+    "changelogUrl": "https://github.com/TriceHelix/GenericBurstJobs",
+    "license": "LICENSE.txt",
+    "dependencies": {
+      "com.unity.burst": "1.8.0",
+      "com.unity.collections": "2.1.1",
+      "com.unity.nuget.mono-cecil" : "1.10"
+   },
+   "keywords": [
+      "jobs system",
+      "burst compiler",
+      "code analysis"
+    ],
+    "author": {
+      "name": "Trice Helix",
+      "email": "trice.helix@gmail.com",
+      "url": "https://github.com/TriceHelix"
+    }
+  }
