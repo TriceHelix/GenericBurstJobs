@@ -1,5 +1,7 @@
 using System;
 
+[assembly: TriceHelix.GenericBurstJobs.DisableGenericBurstJobRegistry]
+
 namespace TriceHelix.GenericBurstJobs
 {
     /// <summary>
@@ -7,11 +9,11 @@ namespace TriceHelix.GenericBurstJobs
     /// </summary>
     /// <remarks>
     /// Generic job structs MUST BE PUBLIC in order to be visible to the code analyzer.
-    /// The default "Assembly-CSharp" and "Assembly-CSharp-Editor" assemblies are automatically analyzed and do not require this attribute.
+    /// Unity's default "Assembly-CSharp" and "Assembly-CSharp-Editor" assemblies are automatically analyzed and do not require this attribute.
     /// You can disable this behaviour by utilizing <see cref="DisableGenericBurstJobRegistryAttribute"/>.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false, Inherited = false)]
-    public class ContainsGenericBurstJobsAttribute : Attribute { }
+    public sealed class ContainsGenericBurstJobsAttribute : Attribute { }
 
 
     /// <summary>
@@ -19,5 +21,5 @@ namespace TriceHelix.GenericBurstJobs
     /// It completely overrides <see cref="ContainsGenericBurstJobsAttribute"/> on the assembly or job itself.
     /// </summary>
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Struct, AllowMultiple = false, Inherited = false)]
-    public class DisableGenericBurstJobRegistryAttribute : Attribute { }
+    public sealed class DisableGenericBurstJobRegistryAttribute : Attribute { }
 }

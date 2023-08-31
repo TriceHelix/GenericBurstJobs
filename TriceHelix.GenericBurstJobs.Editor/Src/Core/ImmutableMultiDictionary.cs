@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace TriceHelix.GenericBurstJobs.Editor
 {
-    internal class ImmutableMultiDictionary<TKey, TValue>
+    internal sealed class ImmutableMultiDictionary<TKey, TValue>
     {
         private readonly Dictionary<TKey, int> KeyToValueIndex;
         private readonly TValue[] Values;

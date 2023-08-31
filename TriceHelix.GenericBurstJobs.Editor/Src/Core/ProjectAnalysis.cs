@@ -1,62 +1,117 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using Unity.Burst;
-using Unity.Jobs;
+using UnityEditor;
 using UnityEngine.Assertions;
-using UnityCodeGen;
 
 namespace TriceHelix.GenericBurstJobs.Editor
 {
-    [Generator]
-    internal class CodeGen : ICodeGenerator
+    internal static class ProjectAnalysis
     {
         private static readonly string BurstCompileAttribute_FullName = typeof(BurstCompileAttribute).FullName;
         private static readonly string ContainsGenericBurstJobsAttribute_FullName = typeof(ContainsGenericBurstJobsAttribute).FullName;
         private static readonly string DisableGenericBurstJobRegistryAttribute_FullName = typeof(DisableGenericBurstJobRegistryAttribute).FullName;
-        private static readonly string RegisterGenericJobTypeAttribute_FullName = typeof(RegisterGenericJobTypeAttribute).FullName;
+        private static readonly string TempAssemblyDir = Path.Combine(Path.GetTempPath(), "TriceHelix-GenericBurstJobs-TMP");
 
         private static readonly HashSet<string> AutoIncludedTargetAssemblies = new(2)
         {
+            // assemblies with these names are automatically targeted for convenience (unless explicitly excluded)
             "Assembly-CSharp",
             "Assembly-CSharp-Editor"
         };
 
 
-        public void Execute(GeneratorContext context)
+        [InitializeOnLoadMethod]
+        private static void OnInit()
         {
-            // load assemblies and types
-            AssemblyDefinition[] relevantAssemblies = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => IsTargetAssembly(a))
-                .Select(a => AssemblyDefinition.ReadAssembly(a.Location))
-                .ToArray();
+            EditorApplication.quitting += OnEditorShutdown;
+        }
+
+
+        private static void OnEditorShutdown()
+        {
+            ClearTempAssemblies();
+        }
+
+
+        private static void ClearTempAssemblies()
+        {
+            if (Directory.Exists(TempAssemblyDir))
+                Directory.Delete(TempAssemblyDir, true);
+        }
+
+
+        internal static string[] ResolveGenericJobTypes(out int numUniqueJobs)
+        {
+            List<string> resolvedTypeStrings = new(256);
+            DefaultAssemblyResolver assemblyResolver = new();
+            ReaderParameters readerParams = new(ReadingMode.Deferred)
+            {
+                AssemblyResolver = assemblyResolver,
+                ReadWrite = false
+            };
+
+            /*
+            // add .NET runtime libraries
+            string netLibsDir = RuntimeEnvironment.GetRuntimeDirectory();
+            assemblyResolver.AddSearchDirectory(netLibsDir);
+            foreach (string dir in Directory.GetDirectories(netLibsDir, "*", SearchOption.AllDirectories))
+                assemblyResolver.AddSearchDirectory(dir);
+
+            // add Unity libraries
+            string unityLibsDir = Path.Combine(Path.GetDirectoryName(EditorApplication.applicationPath), "Data", "Managed");
+            assemblyResolver.AddSearchDirectory(unityLibsDir);
+            foreach (string dir in Directory.GetDirectories(unityLibsDir, "*", SearchOption.AllDirectories))
+                assemblyResolver.AddSearchDirectory(dir);
+            */
+
+            // create temporary storage for assembly copies
+            ClearTempAssemblies();
+            Directory.CreateDirectory(TempAssemblyDir);
+            assemblyResolver.AddSearchDirectory(TempAssemblyDir);
+
+            // copy targets to temp location (this avoids errors where Unity tries to access the assemblies when they are still opened for analysis)
+            Assembly[] targetInfos = AppDomain.CurrentDomain.GetAssemblies().Where(a => IsTargetAssembly(a)).ToArray();
+            int targetCount = targetInfos.Length;
+            string[] targetPaths = new string[targetCount];
+            for (int i = 0; i < targetCount; i++)
+            {
+                string src = targetInfos[i].Location;
+                string dest = Path.Combine(TempAssemblyDir, Path.GetFileName(src));
+                File.Copy(src, dest, true);
+                targetPaths[i] = dest;
+            }
+
+            // load temp copies of assemblies
+            AssemblyDefinition[] targetAssemblies = new AssemblyDefinition[targetCount];
+            for (int i = 0; i < targetCount; i++)
+            {
+                targetAssemblies[i] = AssemblyDefinition.ReadAssembly(targetPaths[i], readerParams);
+            }
 
             try
             {
-                StringBuilder script = new(32768);
-                script.AppendLine("// THIS IS AN AUTOMATICALLY GENERATED FILE CREATED BY TriceHelix.GenericBurstJobs");
-                script.AppendLine("// PLEASE DO NOT EDIT THE FILE MANUALLY - RE-RUN THE SOURCE GENERATOR TO REFRESH IT OR TO FIX ANY ERRORS");
-                script.AppendLine();
-
-                // get all types
-                TypeDefinition[] allTypes = relevantAssemblies
-                    .SelectMany(a => a.MainModule.GetTypes().Skip(1))
-                    .GroupBy(t => t.FullName)
-                    .Select(g => g.First())
+                // get all elemental types (no generic arguments)
+                TypeDefinition[] elementalTypes = targetAssemblies
+                    .SelectMany(a => a.MainModule.GetTypes().Skip(1)) // always skip special first type
+                    .GroupBy(tdef => tdef.FullName)
+                    .Select(group => group.First()) // unique
                     .ToArray();
 
-                // get target types
-                TypeDefinition[] targetTypes = allTypes.Where(t => IsTargetType(t)).ToArray();
-                List<string> resolvedTypeStrings = new(256);
+                // get target types (elemental job structs)
+                TypeDefinition[] targetTypes = elementalTypes.Where(tdef => IsTargetType(tdef)).ToArray();
+                numUniqueJobs = targetTypes.Length;
 
                 // cache
                 StringBuilder typeStringBuilder = new(1024);
 
                 // resolve generic parameters of targets
-                GenericResolver resolver = new(allTypes, 128);
+                GenericTypeResolver resolver = new(targetAssemblies, elementalTypes, 128);
                 foreach (var type in targetTypes)
                 {
                     if (!type.HasGenericParameters)
@@ -78,46 +133,23 @@ namespace TriceHelix.GenericBurstJobs.Editor
                         resolvedTypeStrings.Add(typeStringBuilder.ToString());
                     }
                 }
-
-                // register resolved types via attribute in script
-                int numDistinctTypes = 0;
-                foreach (string typeString in resolvedTypeStrings.Distinct())
-                {
-                    numDistinctTypes++;
-
-                    script.Append("[assembly: ");
-                    script.Append(RegisterGenericJobTypeAttribute_FullName);
-                    script.Append("(typeof(");
-                    script.Append(typeString);
-                    script.Append("))]");
-                    script.AppendLine();
-                }
-
-                // summary
-                if (numDistinctTypes > 0) script.AppendLine();
-                script.AppendLine("// SUMMARY:");
-                script.Append($"// Resolved ");
-                script.Append(numDistinctTypes.ToString());
-                script.Append($" unique generic job type{(numDistinctTypes != 1 ? "s" : string.Empty)} from ");
-                script.Append(targetTypes.Length.ToString());
-                script.AppendLine($" job{(targetTypes.Length != 1 ? "s" : string.Empty)}.");
-                script.Append("// Time of last source-regeneration: ");
-                script.AppendLine(DateTime.Now.ToString());
-
-                context.AddCode("GenericBurstJobs_Registry.cs", script.ToString());
             }
             finally
             {
                 // unload assemblies
-                foreach (var a in relevantAssemblies)
-                    a.Dispose();
+                foreach (var a in targetAssemblies)
+                    a?.Dispose();
             }
+
+            GC.Collect();
+
+            return resolvedTypeStrings.Distinct().ToArray();
         }
 
 
         private static bool IsTargetAssembly(Assembly assembly)
         {
-            // cannot be dynamic
+            // dynamic assemblies are created by Emit, making them impossible to read from disk
             if (assembly.IsDynamic)
                 return false;
 
@@ -143,16 +175,10 @@ namespace TriceHelix.GenericBurstJobs.Editor
             if (!((type.IsPublic || type.IsNestedPublic) && type.IsValueType && type.HasGenericParameters))
                 return false;
 
-            // TODO: check for IJob<...> interfaces?
-
-            string[] attributeTypes = type.CustomAttributes.Select(attr => attr.AttributeType.FullName).ToArray();
-
-            // check if type was explicitly excluded
-            if (attributeTypes.Contains(DisableGenericBurstJobRegistryAttribute_FullName))
-                return false;
-
-            // must be burst compiled
-            return attributeTypes.Contains(BurstCompileAttribute_FullName);
+            // must be burst compiled and not explicitly excluded
+            HashSet<string> attributeTypes = type.CustomAttributes.Select(attr => attr.AttributeType.FullName).ToHashSet();
+            return attributeTypes.Contains(BurstCompileAttribute_FullName)
+                && !attributeTypes.Contains(DisableGenericBurstJobRegistryAttribute_FullName);
         }
 
 
@@ -214,7 +240,7 @@ namespace TriceHelix.GenericBurstJobs.Editor
             {
                 if (!isFirst) sb.Append(", ");
                 isFirst = false;
-                TypeReference[] genericArgs = type.IsGenericInstance ? (type as GenericInstanceType).GenericArguments.ToArray() : Array.Empty<TypeReference>();
+                TypeReference[] genericArgs = type.IsGenericInstance ? ((GenericInstanceType)type).GenericArguments.ToArray() : Array.Empty<TypeReference>();
                 BuildResolvedTypeName(sb, type, genericArgs);
             }
 

@@ -1,16 +1,18 @@
 {
     "name": "com.tricehelix.genericburstjobs",
-    "version": "1.0.0",
+    "version": "2.0.0-preview",
     "displayName": "Generic Burst Jobs",
-    "description": "Support for generic, Burst compiled Job structs through automatic code analysis and generation",
+    "description": "Support for generic, Burst compiled Jobs through automatic code analysis and generation",
     "unity": "2020.3",
     "documentationUrl": "https://github.com/TriceHelix/GenericBurstJobs",
-    "changelogUrl": "https://github.com/TriceHelix/GenericBurstJobs",
+    "changelogUrl": "https://github.com/TriceHelix/GenericBurstJobs/commits/upm",
     "license": "LICENSE.txt",
+    "licensesUrl": "https://github.com/TriceHelix/GenericBurstJobs/blob/upm/LICENSE.txt",
     "dependencies": {
       "com.unity.burst": "1.8.0",
-      "com.unity.collections": "2.1.1",
-      "com.unity.nuget.mono-cecil" : "1.10.0"
+      "com.unity.collections": "1.5.0",
+      "com.unity.nuget.mono-cecil" : "1.11.0",
+      "com.unity.nuget.newtonsoft-json": "3.2.0"
    },
    "keywords": [
       "jobs system",

@@ -1,36 +1,36 @@
 # Generic Burst Jobs in Unity
 
-### Support for generic, Burst compiled Job structs through automatic code analysis and generation
+### Support for generic, Burst compiled Jobs through automatic code analysis and generation
 Requires Unity 2020.3 LTS or newer.
 
 ---
 
 #### Installation (via Package Manager)
-* First, install [this dependency](https://github.com/AnnulusGames/UnityCodeGen)
-* Click "Add package from git URL..."
+* Select "Add package from git URL..."
 * Enter `https://github.com/TriceHelix/GenericBurstJobs.git#upm` and click "Add"
 * Done!
 
 Additional Unity dependencies (these will be automatically installed):
-* Unity.Burst (1.8.x +)
-* Unity.Collections (1.4.x +)
-* Mono.Cecil (1.10.x +)
+* Unity.Burst (1.8 +)
+* Unity.Collections (1.5 +)
+* Mono.Cecil (1.11 +)
+* Newtonsoft.Json (3.2 +)
 
 ---
 
 #### Usage
 
-By default, any job structs containing generic parameters and marked with `[Unity.Jobs.BurstCompile]` will be tracked. Whenever you specify generic parameters in your code, these arguments will be propagated to your generic job structs and a corresponding `[Unity.Jobs.RegisterGenericJobType]` attribute will be added to a generated script.
+The settings are located at `Project Settings > Generic Burst Jobs`. There you can manually run the source generator, change its output destination, and more. By default, the generator will run automatically when the Player application is built.
 
-When using seperate assemblies (not the default "Assembly-CSharp"), you must mark them by adding the following to one of its scripts: `[assembly: TriceHelix.GenericBurstJobs.ContainsGenericBurstJobs]`
+During code analysis, any job structs marked with `Unity.Jobs.BurstCompileAttribute` that contain generic parameters will be tracked. For each unique instance of these structs the source generator creates a corresponding `Unity.Jobs.RegisterGenericJobTypeAttribute` in the output script. It works even through several layers of generic parameters, where some may belong to a class and some to a method. As long as all generic arguments of the job structs can be inferred at compile time, they will be registered.
 
-You can exclude specific job structs or entire assemblies by utilizing this attribute: `[TriceHelix.GenericBurstJobs.DisableGenericJobRegistry]`
+The code analyzer ignores all scripting assemblies except Unity's default "Assembly-CSharp". To detect declarations or references of generic jobs in a custom assembly, simply add this attribute to one of its scripts: `[assembly: TriceHelix.GenericBurstJobs.ContainsGenericBurstJobs]`
 
-Code generation is managed by [UnityCodeGen](https://github.com/AnnulusGames/UnityCodeGen). The easiest way to ensure the code will be refreshed when changes are made is to enable source re-generation at every recompile. This option is located at `Tools > UnityCodeGen > Auto-generate on recompile`. Alternatively, you can manually refresh it via `Tools > UnityCodeGen > Generate`.
+You can also exclude specific job structs or analysis of the default assemblies by utilizing `TriceHelix.GenericBurstJobs.DisableGenericJobRegistryAttribute`.
 
 ---
 
 #### Limitations
-* Your generic job structs, aswell as any types which the struct is nested in, must be marked as `public`. Generic type arguments for these jobs naturally have the same requirement.
-* Generic type arguments must be known at compile time. This is technically not a restriction of this tool - it's simply how Burst works (AOT compilation).
-* Code analysis is susceptible to code stripping. For example, a local instance of a job struct which is never used will be omitted from the compiled IL, thus making it impossible to recognize for this tool.
+* Your generic job structs, aswell as any types which the struct is nested in, must be marked as `public`. Generic arguments for these jobs naturally have the same requirement.
+* Analysis is affected by code stripping. If the compiler omits sections of code that contain references to generic job structs, they will not be registered. This is because the tool analyzes the compiled IL instead of your source code, rendering them undetectable.
+* This tool is far from perfect and may not always provide flawless results. However, well written code will usually not be affected by this. If you have suggestions on how to improve code analysis, encounter a bug, or have any questions, feel free to open an issue or pull request!

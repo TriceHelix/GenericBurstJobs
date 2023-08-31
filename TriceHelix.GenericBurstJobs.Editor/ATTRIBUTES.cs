@@ -1,0 +1,1 @@
+[assembly: TriceHelix.GenericBurstJobs.DisableGenericBurstJobRegistry]

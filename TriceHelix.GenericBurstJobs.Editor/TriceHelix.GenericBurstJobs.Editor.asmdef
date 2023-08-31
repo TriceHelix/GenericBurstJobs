@@ -2,7 +2,6 @@
     "name": "TriceHelix.GenericBurstJobs.Editor",
     "rootNamespace": "TriceHelix.GenericBurstJobs.Editor",
     "references": [
-        "AnnulusGames.UnityCodeGen.Editor",
         "TriceHelix.GenericBurstJobs",
         "Unity.Burst",
         "Unity.Collections"
@@ -11,7 +10,7 @@
         "Editor"
     ],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
