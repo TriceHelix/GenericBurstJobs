@@ -13,7 +13,7 @@ namespace TriceHelix.GenericBurstJobs.Editor
     {
         private static readonly string[] BuiltinTypeNames = new[]
         {
-            // these are the names of types which can always be excluded from analysis
+            // these are the names of types which will always be excluded from analysis
             "System.Void",
             "System.Object",
             "System.ValueType",
@@ -28,7 +28,7 @@ namespace TriceHelix.GenericBurstJobs.Editor
             "System.Int32",
             "System.UInt32",
             "System.Int64",
-            "System.Uint64",
+            "System.UInt64",
             "System.Decimal"
         };
 
@@ -74,7 +74,7 @@ namespace TriceHelix.GenericBurstJobs.Editor
                 throw new ArgumentNullException(nameof(target));
 
             if (!target.HasGenericParameters)
-                throw new InvalidOperationException($"Cannot resolve non-generic type \"{target.FullName}\"");
+                throw new InvalidOperationException($"Cannot resolve type without generic parameters ({target.FullName})");
 
             genericParameterCount = target.GenericParameters.Count;
             typeLists = new List<TypeReference>[genericParameterCount];
@@ -191,22 +191,16 @@ namespace TriceHelix.GenericBurstJobs.Editor
 
             if (isType)
             {
-                foreach (GenericInstanceType varType in AllGenericInstanceTypes.GetValuesForKey(normalizedName))
-                {
-                    if (genericArgCount == varType.GenericArguments.Count)
-                        AnalyzeGenericArgument(varType.GenericArguments[parameterIndex]);
-                }
+                foreach (GenericInstanceType type in AllGenericInstanceTypes.GetValuesForKey(normalizedName))
+                    AnalyzeGenericArgument(type.GenericArguments[parameterIndex]);
             }
             else
             {
                 foreach (GenericInstanceMethod method in AllInvokedGenericInstanceMethods.GetValuesForKey(normalizedName))
-                {
-                    if (genericArgCount == method.GenericArguments.Count)
-                        AnalyzeGenericArgument(method.GenericArguments[parameterIndex]);
-                }
+                    AnalyzeGenericArgument(method.GenericArguments[parameterIndex]);
             }
 
-            // assumes that given type reference has equal number of generic arguments
+            // assumes that given type reference has matching number of generic arguments
             void AnalyzeGenericArgument(TypeReference arg)
             {
                 if (arg.IsGenericParameter && arg is GenericParameter gp)
@@ -357,7 +351,7 @@ namespace TriceHelix.GenericBurstJobs.Editor
         }
 
 
-        // this is a seperated part of AnaylzeTypes() for better readability and should only be used in that context
+        // this is a seperated part of AnalyzeTypes() for better readability and should only be used in that context
         private static void AnalyzeMethod(
             HashSet<string> targetAssemblySet,
             MethodImplTree methodImplTree,

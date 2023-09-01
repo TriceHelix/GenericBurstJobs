@@ -56,11 +56,16 @@ namespace TriceHelix.GenericBurstJobs.Editor
                 try
                 {
                     // CUSTOM
-                    GenericBurstJobsConfig config = JsonConvert.DeserializeObject<GenericBurstJobsConfig>(File.ReadAllText(ConfigFilePath));
+                    string text = File.ReadAllText(ConfigFilePath);
+                    if (string.IsNullOrEmpty(text)) throw new Exception("Empty config file");
+                    GenericBurstJobsConfig config = JsonConvert.DeserializeObject<GenericBurstJobsConfig>(text);
                     isDefault = false;
                     return config;
                 }
-                catch { }
+                catch
+                {
+                    Debug.LogWarning("Loading GenericBurstJobs configuration failed, using default settings.");
+                }
             }
 
             // DEFAULT
@@ -80,7 +85,7 @@ namespace TriceHelix.GenericBurstJobs.Editor
                 CustomSettingsProvider provider = new(
                     path: "Project/Generic Burst Jobs",
                     scopes: SettingsScope.Project,
-                    keywords: new HashSet<string>() { "Generic", "Burst", "Jobs", "Analysis", "Code", "Generation", "Trice", "Helix" }
+                    keywords: new HashSet<string>() { "Code", "Analysis", "Generation", "Trice", "Helix" }
                     );
 
                 return provider;
@@ -95,26 +100,28 @@ namespace TriceHelix.GenericBurstJobs.Editor
 
             private static readonly GUIContent outputPathLabel = new(
                 "Output Script Path",
-                "The generated script which registers your generic job types with Burst is saved to this location. " +
-                "It is relative to the \"Assets\" folder in the project."
+                "The generated script which registers the project's generic job types with Burst is saved to this location. " +
+                "When no absolute (rooted) path is provided, it is relative to the \"Assets\" folder."
                 );
 
             private static readonly GUIContent buildEventOrderLabel = new(
                 "Build Event Order",
-                "Value used by Unity to determine when to generate the registry script when building the Player. " +
-                "If you don't have any custom build events which depend on all scripts being available and up-to-date, leave this value at 0."
+                "Determines the order of events when building the Player application. " +
+                "The lower the value, the earlier code generation is run in the build process. " +
+                "Leave this at 0 as long as you don't have custom build events which might conflict with the source generator."
                 );
 
             private static readonly GUIContent activateOnRecompileLabel = new(
                 "Activate On Recompile",
-                "When enabled, the registry script is regenerated after every recompilation. " +
-                "This will fix errors caused by the removal or renaming of types automatically, but at the cost of more overhead with every tiem you modify your scripts. " +
-                "It is recommended you leave this option disabled and instead manually trigger regeneration using the button below."
+                "When enabled, the source generator is run after every script recompilation. " +
+                "This will fix potential errors caused by the removal or renaming of types automatically at the cost of more overhead for each recompilation. " +
+                "It is recommended you leave this option disabled and instead manually run the generator using the button below when encountering issues. " +
+                "The generator will always run when the Player application is built, nomatter the value of this option."
                 );
 
             private static readonly GUIContent activateCodegenButton = new(
                 "Activate Code Generation",
-                "Manually trigger a regeneration of the registry script for Generic Burst Jobs."
+                "Manually regenerate the registry script for Generic Burst Jobs."
                 );
 
 
@@ -128,7 +135,7 @@ namespace TriceHelix.GenericBurstJobs.Editor
                 Global.ActivateOnRecompile = EditorGUILayout.Toggle(activateOnRecompileLabel, Global.ActivateOnRecompile);
 
                 EditorGUILayout.Space();
-                GUILayout.Label("Actions");
+                GUILayout.Label("Actions", EditorStyles.boldLabel);
 
                 if (GUILayout.Button(activateCodegenButton, GUILayout.Height(24f)))
                 {

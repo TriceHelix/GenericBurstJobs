@@ -97,7 +97,8 @@ namespace TriceHelix.GenericBurstJobs.Editor
 
             if (type.IsFunctionPointer)
             {
-                return "_FuncPtr_"; // normalization not supported yet
+                // normalization of function pointer types not supported yet
+                return "_FuncPtr_";
             }
 
             if (type.IsGenericParameter)

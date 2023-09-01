@@ -12,7 +12,7 @@ namespace TriceHelix.GenericBurstJobs.Editor
     }
 
 
-    internal sealed class BuildHandler : IPreprocessBuildWithReport
+    internal sealed class BuildHandler : IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
         int IOrderedCallback.callbackOrder => GenericBurstJobsConfig.Global.BuildEventOrder;
 
@@ -20,6 +20,11 @@ namespace TriceHelix.GenericBurstJobs.Editor
         {
             SessionState.SetBool(SessionStateKeys.DID_ACTIVATE_KEY, true);
             CodeGen.Activate();
+        }
+
+        void IPostprocessBuildWithReport.OnPostprocessBuild(BuildReport report)
+        {
+            SessionState.SetBool(SessionStateKeys.DID_ACTIVATE_KEY, false);
         }
     }
 
