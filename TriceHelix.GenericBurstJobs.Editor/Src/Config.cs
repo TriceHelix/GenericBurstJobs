@@ -127,22 +127,35 @@ namespace TriceHelix.GenericBurstJobs.Editor
 
             public override void OnGUI(string searchContext)
             {
-                EditorGUILayout.Space();
-                GUILayout.Label("Settings", EditorStyles.boldLabel);
+                EditorGUIUtility.labelWidth = 160f;
 
+                EditorGUILayout.Space();
+
+                // settings
+                int orgIndent = EditorGUI.indentLevel++;
                 Global.OutputScriptPath = EditorGUILayout.DelayedTextField(outputPathLabel, Global.OutputScriptPath);
                 Global.BuildEventOrder = EditorGUILayout.DelayedIntField(buildEventOrderLabel, Global.BuildEventOrder);
                 Global.ActivateOnRecompile = EditorGUILayout.Toggle(activateOnRecompileLabel, Global.ActivateOnRecompile);
+                EditorGUI.indentLevel = orgIndent;
 
                 EditorGUILayout.Space();
-                GUILayout.Label("Actions", EditorStyles.boldLabel);
 
-                if (GUILayout.Button(activateCodegenButton, GUILayout.Height(24f)))
+                // actions
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.Space(6f, false);
+                bool activate = GUILayout.Button(activateCodegenButton, GUILayout.Height(24f), GUILayout.MaxWidth(400f));
+                EditorGUILayout.Space(6f, true);
+                GUILayout.EndHorizontal();
+
+                if (activate)
                 {
                     CodeGen.ActivateWithProgressBar();
                 }
 
                 EditorGUILayout.Space(0f, true);
+
+                // reset label width
+                EditorGUIUtility.labelWidth = 0f;
             }
 
 
