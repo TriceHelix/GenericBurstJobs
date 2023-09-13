@@ -1,6 +1,6 @@
 {
     "name": "com.tricehelix.genericburstjobs",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "displayName": "Generic Burst Jobs",
     "description": "Support for Generic, Burst compiled Jobs through automatic code analysis and generation",
     "unity": "2020.3",
