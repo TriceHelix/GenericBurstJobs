@@ -24,7 +24,7 @@ The settings are located at `Project Settings > Generic Burst Jobs`. There you c
 
 During code analysis, any job structs marked with `Unity.Jobs.BurstCompileAttribute` that contain generic parameters will be tracked. For each unique instance of these structs the source generator creates a corresponding `Unity.Jobs.RegisterGenericJobTypeAttribute` in the output script. It works even through several layers of generic parameters, where some may belong to a class and some to a method. As long as all generic arguments of the job structs can be inferred at compile time, they will be registered.
 
-The code analyzer ignores all scripting assemblies except Unity's default "Assembly-CSharp". To detect declarations or references of generic jobs in a custom assembly, simply add this attribute to one of its scripts: `[assembly: TriceHelix.GenericBurstJobs.ContainsGenericBurstJobs]`
+The code analyzer ignores all code that is not part of [Unity's default scripting assemblies](https://docs.unity3d.com/Manual/ScriptCompileOrderFolders.html). To enable analysis of an external assembly, simply add this attribute to one of its scripts: `[assembly: TriceHelix.GenericBurstJobs.ContainsGenericBurstJobs]`
 
 You can also exclude specific job structs or analysis of the default assemblies by utilizing `TriceHelix.GenericBurstJobs.DisableGenericJobRegistryAttribute`.
 

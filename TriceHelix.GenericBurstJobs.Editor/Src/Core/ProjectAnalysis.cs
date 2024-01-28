@@ -22,7 +22,9 @@ namespace TriceHelix.GenericBurstJobs.Editor
         {
             // assemblies with these names are automatically targeted for convenience (unless explicitly excluded)
             "Assembly-CSharp",
-            "Assembly-CSharp-Editor"
+            "Assembly-CSharp-Editor",
+            "Assembly-CSharp-firstpass",
+            "Assembly-CSharp-Editor-firstpass"
         };
 
 
