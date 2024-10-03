@@ -31,6 +31,6 @@ You can also exclude specific job structs or analysis of the default assemblies 
 ---
 
 #### Limitations
-* Your generic job structs, aswell as any types which the struct is nested in, must be marked as `public`. Generic arguments for these jobs naturally have the same requirement.
+* Your generic job structs, as well as any types which the struct is nested in, must be marked as `public`. Generic arguments for these jobs naturally have the same requirement.
 * Analysis is affected by code stripping. If the compiler omits sections of code that contain references to generic job structs, they will not be registered. This is because the tool analyzes the compiled IL instead of your source code, rendering them undetectable.
 * This tool is far from perfect and may not always provide flawless results. However, well written code will usually not be affected by this. If you have suggestions on how to improve code analysis, encounter a bug, or have any questions, feel free to open an issue or pull request!
